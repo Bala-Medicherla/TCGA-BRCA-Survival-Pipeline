@@ -23,32 +23,29 @@
    5. Follow-up time and event indicator (with censoring)
 
 ## Analysis Insights:
-  **Survival analysis**:
+  - **Survival analysis**:
     1. Kaplan–Meier curves to visualize survival differences between treatment groups.
     2. Log-rank test to assess group differences.
     3. Cox proportional hazards modeling to estimate treatment and covariate effects.
     4. Evaluation of proportional hazards assumptions.
   
-  **Machine learning**:
+  - **Machine learning**:
     1. Random Survival Forests to capture non-linear effects and interactions.
     2. Variable importance analysis to identify influential predictors.
     3. Penalized Cox regression (Lasso) for feature selection and model stability
 
-  **Model comparison**:
+  - **Model comparison**:
     1. Comparison of models using the concordance index (C-index).
     2. Discussion of interpretability versus predictive flexibility.
 
 ## Tools and methods:
    This project was implemented in R, using commonly used packages in clinical and biomedical informatics research:
-      1. survival, survminer.
-      2. randomForestSRC.
-      3. glmnet.
-      4. ggplot2
+   Survival, survminer, randomForestSRC,glmnet,ggplot2
       
 ## What this project demonstrates:
    This project reflects my interest in Biomedical and Health Informatics, particularly:
      1. Working with clinically meaningful, time-to-event outcomes.
      2. Applying statistical and machine learning methods to healthcare data.
      3. Building reproducible and readable analysis pipelines.
-     4.Balancing model interpretability with predictive performance.
+     4. Balancing model interpretability with predictive performance.
    Although the data are simulated, the modeling approaches and analytical reasoning closely mirror which are used in real clinical and translational research.
