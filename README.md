@@ -1,54 +1,62 @@
-# Survival analysis
-  A reproducible R project exploring survival analysis and machine learning for time-to-event clinical outcomes using simulated data.
+# Real World Survival Analysis in Breast Cancer Using TCGA Clinical data
 
 ## Project overview:
-  1. This project explores how time to event clinical outcomes can be analyzed using both traditional survival analysis techniques and machine learning–based methods.
-  2. I developed this project as part of my preparation for PhD applications in Biomedical / Health Informatics, with the goal of demonstrating practical skills in clinical data modeling, statistical reasoning, and reproducible research.
-  3. The analysis focuses on a simulated clinical dataset and compares classical survival models with more flexible machine learning approaches to understand treatment effects and patient risk.
+ This project presents a real world survival analysis workflow using publicly available clinical data from The Cancer Genome Atlas(TCGA) breast cancer cohort. The goal is to study overall survival patterns in a observational oncology dataset and to evaluate how well commonly collected clinical variables explain differences in patient outcomes.
 
-## Motive:
- Many important clinical outcomes such as survival, disease progression, or time to relapse are censored which implies that the event of interest is not observed for all patients. Standard regression methods are not appropriate for this type of data. With this project I would like to emphasize the topics on:
-   1. Practice modeling time-to-event outcomes in a realistic clinical setting.
-   2. Compare classical statistical approaches with machine learning methods.
-   3. Understand the strengths and limitations of different survival models.
-   4. Build a clean, reproducible workflow that reflects real research practice.
+   The focus of this work is not algortmic novelty, but rather the careful handling of clinical endpoints , transparent modeling choices and reproducble analysis, these are important in applied biomedical and health informatics research.
+
+## Problem Statement:
+ Clinical trial data are generally generated under controlled conditions, but real world oncology data often reflect patient heterogenity, incomplete followup and varaibility in clinical documentation. As a result, survival analysis using observational clinical datasets requires careful definition of endpoints, explicit handling of censoring and validation of model assumptions.
+
+  This project will adrress two primary questions:
+   1. How does overall survival differ across clinically meaningful patient groups in a real world breast cancer cohort?
+   2. Can a multivariable survival model improve risk stratification beyond simple subgroup comparisons and do the model assumptions hold when applied to real clinical data?
+
+The border goal is to build a reproducible and interpretable survival analysis pipeline that reflects challenges commonly encountered in real world biomedical data.
 
 ## Dataset:
-  The dataset used in this project is fully simulated and doesn't have any real data. It was generated to resemble an oncology style cohort.
-  The data include:
-   1. Demographic variables (age, sex).
-   2. Clinical characteristics (disease stage).
-   3. Treatment assignment (control vs treatment).
-   4. Continuous biomarker measurements
-   5. Follow-up time and event indicator (with censoring)
+  The analysis uses publicly available clinical data from the **TCGA Breast Invasive Carcinoma(TCGA-BRCA)** cohort.      Data are accessed programmatically using the TCGAbiolinks R package.
 
-## Analysis Insights:
-   **Survival analysis**:
-   1. Kaplan–Meier curves to visualize survival differences between treatment groups.
-   2. Log-rank test to assess group differences.
-   3. Cox proportional hazards modeling to estimate treatment and covariate effects.
-   4. Evaluation of proportional hazards assumptions.
+  Only open access, de-idetified clinical variables are used. No protected or controlled access molecular data are      required. The primary endpoint for this analysis is **Overall Survival(OS)**
+
+## Methods:
+   **Endpoint Defnition**:
+     Overall survival is defined using documented TCGA clinical fields. Survival time is derived from days-to-death or      days-to-last-follow-up, and event status is defined as death versus censoring. Records with missing or invalid         survival information are excluded using clearly documented rules.
+
+     Endpoint derivation is treated as a core methodological step rather than an assumption.
    
-  **Machine learning**:
-   1. Random Survival Forests to capture non-linear effects and interactions.
-   2. Variable importance analysis to identify influential predictors.
-   3. Penalized Cox regression (Lasso) for feature selection and model stability
+  **Descriptive Survival Analysis**:
+     Kaplan–Meier survival curves are generated to visualize survival patterns across clinically relevant patient           groups, such as disease stage. Differences between groups are assessed using log-rank tests.
 
-  **Model comparison**:
-   1. Comparison of models using the concordance index (C-index).
-   2. Discussion of interpretability versus predictive flexibility.
+  **Multivariable Survival Modeling**:
+     A Cox proportional hazards model is fitted using available clinical covariates such as age and stage. Model            interpretation focuses on effect direction, magnitude, and clinical plausibility rather than purely statistical        significance.
 
-## Tools and methods:
-  This project was implemented in R, using commonly used packages in clinical and biomedical informatics research:
-   1. Survival, survminer.
-   2. randomForestSRC.
-   3. glmnet.
-   4. ggplot2.
-      
-## What this project demonstrates:
-  This project reflects my interest in Biomedical and Health Informatics, particularly:
-   1. Working with clinically meaningful, time-to-event outcomes.
-   2. Applying statistical and machine learning methods to healthcare data.
-   3. Building reproducible and readable analysis pipelines.
-   4. Balancing model interpretability with predictive performance.
-   Although the data are simulated, the modeling approaches and analytical reasoning closely mirror which are used in real clinical and translational research.
+    The proportional hazards assumption is explicitly evaluated using diagnostic tests. When violations are                identified, alternative model specifications are explored and documented.
+
+  **Model Validation**:
+    To avoid over-optimistic conclusions, internal validation is performed using concordance-based metrics. Model          performance is assessed using either bootstrap-based validation or a train-test evaluation strategy, depending on      the analysis configuration.
+    
+  **Missing Data Handling**:
+    Patterns of missing data are summarized and reported explicitly. The primary analysis uses a complete-case             approach for transparency, with sensitivity summaries provided to assess the potential impact of excluded              observations.
+    
+  **Reproducibility**:
+    The analysis is organized as a scripted pipeline with clearly defined steps. Package versions are managed using       renv, and all figures, tables, and logs are generated programmatically and saved to structured directories to          ensure reproducibility.
+    
+## Key Outputs:
+   1. Kaplan–Meier survival plots
+   2. Log-rank test results
+   3. Cox model summary tables
+   4. Proportinal hazards diagnostics
+   5. Internal validation metrics
+   6. A rendered analysis report(HTML or PDF)
+
+## Limitations:
+ This analysis is based on observational clinical data and is subject to missingness and potential                      confounding.Treatment exposure details are not modeled in this clinical-only version, and results represent            associations rather than causal effects.
+
+ These limitations are inherent to real-world clinical datasets and motivate future extensions of this work.
+
+## Next Steps:
+ Potential extensions include external validation using independent public cohorts, more robust missing data            strategies, and controlled integration of additional clinical or molecular features.
+
+## Why this Project matters:
+ This project reflects the type of applied, methodologically careful analysis commonly required in biomedical           informatics and clinical data science. Emphasis is placed on endpoint definition, assumption checking, validation,     and reproducibility — all of which are central to real-world clinical research workflows.
