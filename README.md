@@ -55,4 +55,4 @@ The border goal is to build a reproducible and interpretable survival analysis p
  Potential extensions include external validation using independent public cohorts, more robust missing data            strategies, and controlled integration of additional clinical or molecular features.
 
 ## Why this Project matters:
- This project reflects the type of applied, methodologically careful analysis commonly required in biomedical           informatics and clinical data science. Emphasis is placed on endpoint definition, assumption checking, validation,     and reproducibility — all of which are central to real-world clinical research workflows.
+ This project reflects the type of applied, methodologically careful analysis commonly required in biomedical           informatics and clinical data science. Emphasis is placed on endpoint definition, assumption checking, validation,     and reproducibility all of which are central to real-world clinical research workflows.
