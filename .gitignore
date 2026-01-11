@@ -1,0 +1,14 @@
+# Raw and processed data (do not upload)
+data_processed/
+*.rds
+
+# Logs
+results/logs/
+
+# RStudio / session files
+.Rhistory
+.RData
+.Rproj.user/
+
+# macOS system files
+.DS_Store

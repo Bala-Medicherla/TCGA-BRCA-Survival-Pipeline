@@ -1,0 +1,4 @@
+            chisq df    p
+age_years   0.907  1 0.34
+stage_group 2.474  3 0.48
+GLOBAL      3.236  4 0.52

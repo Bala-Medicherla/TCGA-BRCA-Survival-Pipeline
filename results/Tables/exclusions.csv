@@ -1,0 +1,3 @@
+rule,n_excluded
+Missing/invalid OS time (<=0 or NA),23
+Missing event status (vital_status unknown),1

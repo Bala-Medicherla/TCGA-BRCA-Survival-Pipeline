@@ -1,0 +1,3 @@
+Train N: 82
+Test N: 36
+Test-set Harrell's C-index: 0.3841
