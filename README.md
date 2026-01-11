@@ -45,7 +45,10 @@ The border goal is to build a reproducible and interpretable survival analysis p
    4. Proportinal hazards diagnostics
    5. Internal validation metrics
    6. A rendered analysis report(HTML or PDF)
-
+      
+## How to run:
+  The full analysis pipeline can be executed from the project root directory using a single command in R studio: **source("run_pipeline.R")**
+  
 ## Limitations:
  This analysis is based on observational clinical data and is subject to missingness and potential                      confounding.Treatment exposure details are not modeled in this clinical-only version, and results represent            associations rather than causal effects.
 
