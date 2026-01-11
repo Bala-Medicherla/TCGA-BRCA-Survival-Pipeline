@@ -21,17 +21,13 @@ The border goal is to build a reproducible and interpretable survival analysis p
 
 ## Methods:
    **Endpoint Defnition**:
-     Overall survival is defined using documented TCGA clinical fields. Survival time is derived from days-to-death or      days-to-last-follow-up, and event status is defined as death versus censoring. Records with missing or invalid         survival information are excluded using clearly documented rules.
-
-     Endpoint derivation is treated as a core methodological step rather than an assumption.
+     Overall survival is defined using documented TCGA clinical fields. Survival time is derived from days-to-death or      days-to-last-follow-up, and event status is defined as death versus censoring. Records with missing or invalid         survival information are excluded using clearly documented rules.Endpoint derivation is treated as a core              methodological step rather than an assumption.
    
   **Descriptive Survival Analysis**:
      Kaplan–Meier survival curves are generated to visualize survival patterns across clinically relevant patient           groups, such as disease stage. Differences between groups are assessed using log-rank tests.
 
   **Multivariable Survival Modeling**:
-     A Cox proportional hazards model is fitted using available clinical covariates such as age and stage. Model            interpretation focuses on effect direction, magnitude, and clinical plausibility rather than purely statistical        significance.
-
-    The proportional hazards assumption is explicitly evaluated using diagnostic tests. When violations are                identified, alternative model specifications are explored and documented.
+     A Cox proportional hazards model is fitted using available clinical covariates such as age and stage. Model            interpretation focuses on effect direction, magnitude, and clinical plausibility rather than purely statistical        significance.The proportional hazards assumption is explicitly evaluated using diagnostic tests. When violations       are identified, alternative model specifications are explored and documented.
 
   **Model Validation**:
     To avoid over-optimistic conclusions, internal validation is performed using concordance-based metrics. Model          performance is assessed using either bootstrap-based validation or a train-test evaluation strategy, depending on      the analysis configuration.
