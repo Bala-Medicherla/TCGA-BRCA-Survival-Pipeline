@@ -65,42 +65,121 @@ query <- GDCquery(
   project = "TCGA-BRCA",
   data.category = "Transcriptome Profiling",
   data.type = "Gene Expression Quantification",
-  workflow.type = "HTSeq - FPKM"
+  workflow.type = "STAR - Counts"
 )
 
 GDCdownload(query)
-se <- GDCprepare(query)
-expr <- assay(se)
-
-cat("Expression matrix loaded.\n")
-cat("Dimensions:", nrow(expr), "genes x", ncol(expr), "samples\n\n")
 
 # ------------------------------------------------------------
-# 3) Build a simple proliferation signature
+# 3) Build a simple proliferation signature (Memory-Efficient)
 # ------------------------------------------------------------
 prolif_genes <- c("MKI67", "CCNB1", "CDK1", "TOP2A", "BUB1")
-gene_map <- rowData(se) %>% as.data.frame()
 
-if (!"gene_name" %in% names(gene_map)) {
-  stop("gene_name not found in expression rowData. Check GDCprepare output.")
+cat("Retrieving file manifest from query...\n")
+# Get the manifest which links file names to sample barcodes
+manifest <- tryCatch({
+  getResults(query)
+}, error = function(e) {
+  # Fallback for older TCGAbiolinks versions
+  query$results[[1]]
+})
+
+# Filter for the files we just downloaded
+# Using the project directory structure created by GDCdownload
+source_dir <- file.path("GDCdata", "TCGA-BRCA", "Transcriptome_Profiling", "Gene_Expression_Quantification")
+
+# We need to map file names to patient IDs. 
+# The manifest usually has 'file_name' and 'cases' (which is the sample barcode)
+files_to_process <- manifest %>%
+  select(file_name, cases) %>%
+  distinct()
+
+cat("Found", nrow(files_to_process), "files to process.\n")
+
+# Function to read a single file and extract only the proliferation genes
+read_prolif_genes <- function(f_name, case_id, required_genes) {
+  # Build full path (GDCdownload organizes by UUID folders usually, but let's try recursive search or direct path if possible)
+  # Actually, GDCdownload creates: GDCdata/Project/Category/Type/UUID/filename
+  # But we can verify with list.files
+  
+  full_path <- list.files(
+    path = "GDCdata", 
+    pattern = f_name, 
+    recursive = TRUE, 
+    full.names = TRUE
+  )
+  
+  if (length(full_path) == 0) {
+    warning(paste("File not found:", f_name))
+    return(NULL)
+  }
+  
+  # Read only necessary columns
+  # STAR-Counts file usually has: gene_id, gene_name, gene_type, unstranded, ... fpkm_unstranded ...
+  # We skip lines (often 2-6 header lines in some formats, but STAR-Counts TSV usually has a header row or comments)
+  # using read_tsv with comment argument is safest.
+  
+  d <- suppressMessages(read_tsv(
+    full_path[1], 
+    col_types = cols_only(
+      gene_name = col_character(), 
+      fpkm_unstranded = col_double()
+    ),
+    comment = "#",
+    show_col_types = FALSE
+  ))
+  
+  # Filter for our genes
+  d_sub <- d %>%
+    filter(gene_name %in% required_genes) %>%
+    mutate(sample_barcode = case_id)
+  
+  return(d_sub)
 }
 
-prolif_rows <- gene_map %>%
-  filter(gene_name %in% prolif_genes) %>%
-  pull(row.names)
+cat("Reading files iteratively (low memory mode)...\n")
 
-if (length(prolif_rows) == 0) {
-  stop("No proliferation genes found in expression matrix.")
+# Use lapply to read files and bind them (much lighter than loading a giant matrix)
+# Requires 'purrr' or 'dplyr' bind_rows
+expr_list <- vector("list", nrow(files_to_process))
+
+# Progress bar could be nice, but simple print is safer for logs
+for (i in seq_len(nrow(files_to_process))) {
+  if (i %% 100 == 0) cat("Processed", i, "/", nrow(files_to_process), "samples...\n")
+  
+  expr_list[[i]] <- read_prolif_genes(
+    files_to_process$file_name[i], 
+    files_to_process$cases[i], 
+    prolif_genes
+  )
 }
 
-expr_prolif <- expr[prolif_rows, , drop = FALSE]
-expr_z <- t(scale(t(expr_prolif)))
-prolif_score <- colMeans(expr_z, na.rm = TRUE)
+expr_df <- bind_rows(expr_list)
+cat("Finished reading expression data.\n")
+
+if (nrow(expr_df) == 0) {
+  stop("No proliferation gene data extracted. Check gene names or file formats.")
+}
+
+# Calculate proliferation score per sample -> then average per patient
+# Score = mean of Z-scores of the 5 genes
+# First, pivot to wide format to calculate Z-scores across samples
+expr_wide <- expr_df %>%
+  select(sample_barcode, gene_name, fpkm_unstranded) %>%
+  tidyr::pivot_wider(names_from = gene_name, values_from = fpkm_unstranded) %>%
+  column_to_rownames("sample_barcode")
+
+# Calculate Z-scores
+# scale() operates on columns (genes)
+expr_z <- scale(expr_wide)
+
+# Calculate mean Z-score (Proliferation Score) for each sample
+prolif_score_vec <- rowMeans(expr_z, na.rm = TRUE)
 
 expr_scores <- tibble(
-  sample_barcode = colnames(expr),
+  sample_barcode = names(prolif_score_vec),
   patient_id = str_sub(sample_barcode, 1, 12),
-  proliferation_score = as.numeric(prolif_score)
+  proliferation_score = as.numeric(prolif_score_vec)
 ) %>%
   group_by(patient_id) %>%
   summarize(proliferation_score = mean(proliferation_score, na.rm = TRUE), .groups = "drop")
@@ -119,8 +198,23 @@ if (nrow(merged) == 0 || sum(merged$os_event, na.rm = TRUE) == 0) {
   stop("Insufficient data/events after merging molecular scores.")
 }
 
+
+cat("Stage distribution:\n")
+print(table(merged$stage_group, merged$os_event, dnn = c("Stage", "Event")))
+
+# Collapse stages into binary groups to ensure model stability (fix convergence warning)
+merged <- merged %>%
+  mutate(stage_binary = case_when(
+    stage_group %in% c("I", "II") ~ "Early",
+    stage_group %in% c("III", "IV") ~ "Late",
+    TRUE ~ NA_character_
+  ))
+
+cat("Binary stage distribution:\n")
+print(table(merged$stage_binary, merged$os_event, dnn = c("Stage_Binary", "Event")))
+
 cox_fit <- coxph(
-  Surv(os_time_days, os_event) ~ age_years + stage_group + proliferation_score,
+  Surv(os_time_days, os_event) ~ age_years + stage_binary + proliferation_score,
   data = merged
 )
 
