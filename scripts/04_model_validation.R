@@ -22,6 +22,11 @@ dir.create("results/logs", showWarnings = FALSE, recursive = TRUE)
 log_file <- file("results/logs/validation_log.txt", open = "wt")
 sink(log_file, type = "output")
 sink(log_file, type = "message")
+on.exit({
+  sink(type = "output")
+  sink(type = "message")
+  close(log_file)
+}, add = TRUE)
 
 cat("Starting internal validation (train/test)...\n\n")
 
@@ -32,6 +37,10 @@ dat <- readRDS("data_processed/clinical_surv.rds") %>%
   filter(!is.na(age_years), !is.na(stage_group))
 
 cat("Rows available for validation:", nrow(dat), "\n\n")
+
+if (nrow(dat) == 0 || sum(dat$os_event, na.rm = TRUE) == 0) {
+  stop("Insufficient data/events for validation.")
+}
 
 # 70/30 split
 n <- nrow(dat)
@@ -69,7 +78,3 @@ writeLines(out, "results/tables/c_index.txt")
 cat("Saved C-index summary to results/tables/c_index.txt\n\n")
 
 cat("Validation completed successfully.\n")
-
-sink(type = "output")
-sink(type = "message")
-close(log_file)
