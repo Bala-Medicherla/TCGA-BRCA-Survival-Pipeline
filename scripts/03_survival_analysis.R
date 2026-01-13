@@ -23,6 +23,11 @@ dir.create("results/logs",    showWarnings = FALSE, recursive = TRUE)
 log_file <- file("results/logs/analysis_log.txt", open = "wt")
 sink(log_file, type = "output")
 sink(log_file, type = "message")
+on.exit({
+  sink(type = "output")
+  sink(type = "message")
+  close(log_file)
+}, add = TRUE)
 
 cat("Starting survival analysis (KM + Cox + diagnostics)...\n\n")
 
@@ -35,6 +40,10 @@ cat("Analysis dataset rows:", nrow(dat), "\n\n")
 # For KM by stage, restrict to records with stage_group
 km_dat <- dat %>% filter(!is.na(stage_group))
 cat("Rows available for KM-by-stage:", nrow(km_dat), "\n\n")
+
+if (nrow(km_dat) == 0) {
+  stop("No rows with stage_group available for KM analysis.")
+}
 
 surv_obj <- Surv(time = km_dat$os_time_days, event = km_dat$os_event)
 
@@ -84,6 +93,10 @@ cat("Saved log-rank test output to results/tables/logrank_stage.txt\n\n")
 cox_dat <- dat %>% filter(!is.na(age_years), !is.na(stage_group))
 cat("Rows available for Cox model:", nrow(cox_dat), "\n\n")
 
+if (nrow(cox_dat) == 0 || sum(cox_dat$os_event, na.rm = TRUE) == 0) {
+  stop("Insufficient data/events for Cox model fitting.")
+}
+
 cox_fit <- coxph(
   Surv(os_time_days, os_event) ~ age_years + stage_group,
   data = cox_dat
@@ -110,7 +123,3 @@ dev.off()
 
 cat("Saved PH diagnostic plot to results/figures/ph_diagnostics.png\n\n")
 cat("Survival analysis script completed successfully.\n")
-
-sink(type = "output")
-sink(type = "message")
-close(log_file)
