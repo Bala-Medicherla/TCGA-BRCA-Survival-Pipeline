@@ -11,4 +11,7 @@ results/logs/
 .Rproj.user/
 
 # macOS system files
-.DS_Storeresults/
+.DS_Store
+
+# Analysis outputs
+results/
