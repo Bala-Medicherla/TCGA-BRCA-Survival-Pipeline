@@ -25,6 +25,12 @@ dir.create("results/logs", showWarnings = FALSE, recursive = TRUE)
 log_file <- file("results/logs/download_log.txt", open = "wt")
 sink(log_file, type = "output")
 sink(log_file, type = "message")
+on.exit({
+  sink(type = "output")
+  sink(type = "message")
+  close(log_file)
+}, add = TRUE)
+
 
 cat("Starting download of TCGA-BRCA clinical data...\n")
 cat("Source: NCI Genomic Data Commons (public clinical dataset)\n\n")
@@ -34,6 +40,10 @@ clinical_raw <- GDCquery_clinic(
   project = "TCGA-BRCA",
   type = "clinical"
 )
+
+if (nrow(clinical_raw) == 0) {
+  stop("No clinical records returned from GDCquery_clinic().")
+}
 
 # Basic sanity checks and logging
 cat("Download completed successfully.\n")
@@ -49,8 +59,3 @@ saveRDS(
 cat("Raw clinical data saved to data_processed/clinical_raw.rds\n")
 cat("This dataset will be used as input for endpoint derivation\n")
 cat("and downstream survival analyses.\n")
-
-# Close log sinks
-sink(type = "output")
-sink(type = "message")
-close(log_file)
