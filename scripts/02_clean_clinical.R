@@ -26,6 +26,11 @@ dir.create("results/logs", showWarnings = FALSE, recursive = TRUE)
 log_file <- file("results/logs/cleaning_log.txt", open = "wt")
 sink(log_file, type = "output")
 sink(log_file, type = "message")
+on.exit({
+  sink(type = "output")
+  sink(type = "message")
+  close(log_file)
+}, add = TRUE)
 
 cat("Starting clinical cleaning + survival endpoint derivation...\n\n")
 
@@ -52,6 +57,10 @@ if (is.na(days_to_death_col) || is.na(days_to_lfu_col)) {
   stop("Expected survival columns not found. Check names(clinical_raw).")
 }
 
+if (!("vital_status" %in% names(clinical_raw))) {
+  stop("Expected vital_status column not found. Check names(clinical_raw).")
+}
+
 cat("Using survival columns:\n")
 cat(" - days_to_death:", days_to_death_col, "\n")
 cat(" - days_to_last_follow_up:", days_to_lfu_col, "\n\n")
@@ -69,7 +78,7 @@ if (!is.na(age_col)) cat("Using age column:", age_col, "\n\n")
 # ------------------------------------------------------------
 dat <- clinical_raw %>%
   mutate(
-    vital_status = if ("vital_status" %in% names(clinical_raw)) as.character(vital_status) else NA_character_,
+    vital_status = as.character(vital_status),
     os_event = case_when(
       !is.na(vital_status) & str_to_lower(vital_status) == "dead"  ~ 1L,
       !is.na(vital_status) & str_to_lower(vital_status) == "alive" ~ 0L,
@@ -159,7 +168,3 @@ write_csv(dat_clean, "data_processed/clinical_surv.csv")
 cat("Saved analysis dataset:\n")
 cat(" - data_processed/clinical_surv.rds\n")
 cat(" - data_processed/clinical_surv.csv\n")
-
-sink(type = "output")
-sink(type = "message")
-close(log_file)
