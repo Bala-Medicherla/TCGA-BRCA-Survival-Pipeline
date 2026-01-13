@@ -1,0 +1,15 @@
+Call:
+survdiff(formula = surv_obj ~ stage_group, data = km_dat)
+
+                 N Observed Expected (O-E)^2/E
+stage_group=I   90       13    24.63      5.49
+stage_group=II   6        0     1.86      1.86
+stage_group=III  2        2     0.31      9.21
+stage_group=IV  20       15     3.20     43.55
+                (O-E)^2/V
+stage_group=I       31.90
+stage_group=II       2.17
+stage_group=III      9.37
+stage_group=IV      50.02
+
+ Chisq= 61.8  on 3 degrees of freedom, p= 2e-13 
