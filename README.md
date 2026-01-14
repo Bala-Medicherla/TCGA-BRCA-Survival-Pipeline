@@ -29,21 +29,27 @@ Overall survival is defined using documented TCGA clinical fields. Survival time
  **Multivariable Survival Modeling**:
  A Cox proportional hazards model is fitted using available clinical covariates such as age and stage. Model interpretation focuses on      effect direction, magnitude, and clinical plausibility rather than purely statistical significance.The proportional hazards assumption is explicitly evaluated using diagnostic tests. When violations are identified, alternative model specifications are explored and documented.
 
+
  **Model Validation**:
  To avoid over-optimistic conclusions, internal validation is performed using concordance-based metrics. Model performance is assessed using either bootstrap-based validation or a train-test evaluation strategy, depending on the analysis configuration.
+
+  **Model Validation**:
+    To avoid over-optimistic conclusions, internal validation is performed using concordance-based metrics. Model performance is assessed using both a train-test split and bootstrap-based out-of-bag validation to provide a more robust estimate of generalization performance. 
+
     
  **Missing Data Handling**:
  Patterns of missing data are summarized and reported explicitly. The primary analysis uses a complete-case approach for transparency, with sensitivity summaries provided to assess the potential impact of excluded observations.
     
   **Reproducibility**:
   The analysis is organized as a scripted pipeline with clearly defined steps. To fully pin package versions, initialize `renv` in your environment (`renv::init()`), then snapshot with `renv::snapshot()` so runs can be reproduced later. All figures, tables, and logs are generated programmatically and saved to structured directories.
+    The analysis is organized as a scripted pipeline with clearly defined steps. To fully pin package versions, initialize `renv` in your environment (`renv::init()`), then snapshot with `renv::snapshot()` and commit the resulting `renv.lock` so runs can be reproduced later. All figures, tables, and logs are generated programmatically and saved to structured directories.
     
 ## Key Outputs:
    1. Kaplan–Meier survival plots
    2. Log-rank test results
    3. Cox model summary tables
    4. Proportional hazards diagnostics
-   5. Internal validation metrics
+   5. Internal validation metrics(train/test + bootstrap OOB C-index)
    6. A rendered analysis report (HTML or PDF)
    7. (Optional) Clinical + molecular Cox model results
 
