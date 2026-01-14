@@ -1,0 +1,4 @@
+Bootstrap iterations: 200
+OOB C-index mean: 0.2395
+OOB C-index SD: 0.1072
+OOB C-index N: 200
