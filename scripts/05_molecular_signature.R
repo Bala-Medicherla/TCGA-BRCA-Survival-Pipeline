@@ -19,7 +19,15 @@ suppressPackageStartupMessages({
 })
 
 dir.create("data_processed", showWarnings = FALSE, recursive = TRUE)
-dir.create("results/tables", showWarnings = FALSE, recursive = TRUE)
+results_tables_dir <- file.path("results", "tables")
+legacy_tables_dir <- file.path("results", "Tables")
+results_logs_dir <- file.path("results", "logs")
+
+if (dir.exists(legacy_tables_dir) && !dir.exists(results_tables_dir)) {
+  results_tables_dir <- legacy_tables_dir
+}
+
+dir.create("results/Tables", showWarnings = FALSE, recursive = TRUE)
 dir.create("results/logs", showWarnings = FALSE, recursive = TRUE)
 
 log_file <- file("results/logs/molecular_log.txt", open = "wt")
@@ -68,7 +76,26 @@ query <- GDCquery(
   workflow.type = "STAR - Counts"
 )
 
-GDCdownload(query)
+
+manifest <- tryCatch({
+  getResults(query)
+}, error = function(e) {
+  query$results[[1]]
+})
+
+if (nrow(manifest) == 0) {
+  cat("No gene expression files returned for the query. Skipping molecular extension.\n")
+  cat("Molecular extension completed with no data.\n")
+} else {
+  download_attempt <- tryCatch({
+    GDCdownload(query)
+    TRUE
+  }, error = function(e) {
+    cat("GDCdownload failed. Skipping molecular extension.\n")
+    cat("Error:", conditionMessage(e), "\n")
+    FALSE
+  })
+}
 
 # ------------------------------------------------------------
 # 3) Build a simple proliferation signature (Memory-Efficient)
@@ -222,8 +249,8 @@ cox_sum <- summary(cox_fit)
 cox_table <- as.data.frame(cox_sum$coefficients) %>%
   rownames_to_column("term")
 
-write_csv(cox_table, "results/tables/cox_molecular_summary.csv")
-cat("Saved molecular Cox summary to results/tables/cox_molecular_summary.csv\n")
+write_csv(cox_table, "results/Tables/cox_molecular_summary.csv")
+cat("Saved molecular Cox summary to results/Tables/cox_molecular_summary.csv\n")
 cat("Tip: compare this model to the clinical-only Cox model for context.\n")
 
 cat("Molecular extension completed successfully.\n")
