@@ -4,6 +4,6 @@ source("scripts/01_download_tcga.R")
 source("scripts/02_clean_clinical.R")
 source("scripts/03_survival_analysis.R")
 source("scripts/04_model_validation.R")
-source("scripts/05__molecular_signature.R")
+source("scripts/05_molecular_signature.R")
 
 message("Pipeline completed. Check the results/ folder.")

@@ -2,7 +2,8 @@
 # Script: 04_model_validation.R
 # Purpose:
 #   Perform a simple internal validation of the Cox model using
-#   a train/test split and report Harrell's C-index on the test set.
+#   1) a train/test split
+#   2) bootstrap validation (out-of-bag C-index)
 #
 # Why this matters:
 #   In observational datasets, it is easy to overfit.
@@ -30,7 +31,7 @@ on.exit({
 
 cat("Starting internal validation (train/test)...\n\n")
 
-set.seed(2026)  # reproducible split
+set.seed(2026)  # reproducible split and bootstrap
 
 # Load analysis dataset
 dat <- readRDS("data_processed/clinical_surv.rds") %>%
@@ -78,3 +79,48 @@ writeLines(out, "results/tables/c_index.txt")
 cat("Saved C-index summary to results/tables/c_index.txt\n\n")
 
 cat("Validation completed successfully.\n")
+
+# ------------------------------------------------------------
+# 2) Bootstrap validation (out-of-bag C-index)
+# ------------------------------------------------------------
+cat("Starting bootstrap validation (out-of-bag C-index)...\n\n")
+
+bootstrap_iters <- 200
+oob_cindex <- numeric(bootstrap_iters)
+
+for (i in seq_len(bootstrap_iters)) {
+  boot_idx <- sample(seq_len(n), replace = TRUE)
+  oob_idx <- setdiff(seq_len(n), unique(boot_idx))
+  
+  if (length(oob_idx) < 5) {
+    oob_cindex[i] <- NA_real_
+    next
+  }
+  
+  boot_train <- dat[boot_idx, ]
+  boot_oob <- dat[oob_idx, ]
+  
+  boot_fit <- coxph(
+    Surv(os_time_days, os_event) ~ age_years + stage_group,
+    data = boot_train
+  )
+  
+  lp_oob <- predict(boot_fit, newdata = boot_oob, type = "lp")
+  c_obj_oob <- concordance(Surv(os_time_days, os_event) ~ lp_oob, data = boot_oob)
+  oob_cindex[i] <- unname(c_obj_oob$concordance)
+}
+
+oob_cindex_clean <- oob_cindex[!is.na(oob_cindex)]
+
+boot_summary <- c(
+  paste0("Bootstrap iterations: ", bootstrap_iters),
+  paste0("OOB C-index mean: ", round(mean(oob_cindex_clean), 4)),
+  paste0("OOB C-index SD: ", round(sd(oob_cindex_clean), 4)),
+  paste0("OOB C-index N: ", length(oob_cindex_clean))
+)
+
+writeLines(boot_summary, "results/tables/bootstrap_c_index.txt")
+cat("Saved bootstrap C-index summary to results/tables/bootstrap_c_index.txt\n\n")
+
+cat("Bootstrap validation completed successfully.\n")
+

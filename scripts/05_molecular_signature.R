@@ -2,7 +2,7 @@
 # Script: 05_molecular_signature.R
 # Purpose:
 #   Optional molecular extension for TCGA-BRCA:
-#     1) Download gene expression (HTSeq FPKM)
+#     1) Download gene expression (STAR - Counts)
 #     2) Compute a simple proliferation signature
 #     3) Merge with clinical survival data
 #     4) Fit a Cox model (age + stage + proliferation score)
@@ -59,7 +59,7 @@ clinical <- clinical %>%
   mutate(patient_id = str_sub(as.character(.data[[patient_id_col]]), 1, 12))
 
 # ------------------------------------------------------------
-# 2) Download gene expression (HTSeq FPKM)
+# 2) Download gene expression (STAR - Counts)
 # ------------------------------------------------------------
 query <- GDCquery(
   project = "TCGA-BRCA",
@@ -115,7 +115,7 @@ read_prolif_genes <- function(f_name, case_id, required_genes) {
   }
   
   # Read only necessary columns
-  # STAR-Counts file usually has: gene_id, gene_name, gene_type, unstranded, ... fpkm_unstranded ...
+  # STAR-Counts file usually has: gene_id, gene_name, gene_type, unstranded, ..
   # We skip lines (often 2-6 header lines in some formats, but STAR-Counts TSV usually has a header row or comments)
   # using read_tsv with comment argument is safest.
   
@@ -123,7 +123,7 @@ read_prolif_genes <- function(f_name, case_id, required_genes) {
     full_path[1], 
     col_types = cols_only(
       gene_name = col_character(), 
-      fpkm_unstranded = col_double()
+      unstranded = col_double()
     ),
     comment = "#",
     show_col_types = FALSE
@@ -165,8 +165,8 @@ if (nrow(expr_df) == 0) {
 # Score = mean of Z-scores of the 5 genes
 # First, pivot to wide format to calculate Z-scores across samples
 expr_wide <- expr_df %>%
-  select(sample_barcode, gene_name, fpkm_unstranded) %>%
-  tidyr::pivot_wider(names_from = gene_name, values_from = fpkm_unstranded) %>%
+  select(sample_barcode, gene_name, unstranded) %>%
+  tidyr::pivot_wider(names_from = gene_name, values_from = unstranded) %>%
   column_to_rownames("sample_barcode")
 
 # Calculate Z-scores
