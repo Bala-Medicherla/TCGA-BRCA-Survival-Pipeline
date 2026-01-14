@@ -45,7 +45,7 @@ Overall survival is defined using documented TCGA clinical fields. Survival time
    4. Proportional hazards diagnostics
    5. Internal validation metrics
    6. A rendered analysis report (HTML or PDF)
-   7. 7. (Optional) Clinical + molecular Cox model results
+   7. (Optional) Clinical + molecular Cox model results
 
 ## Optional Molecular Extension (Transcriptome-augmented model):
  To strengthen biological depth, an optional script integrates TCGA-BRCA gene expression data and builds a simple proliferation signature. The signature (average z-score of proliferation genes) is then evaluated alongside age and stage in a Cox model.
