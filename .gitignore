@@ -13,7 +13,11 @@ results/logs/
 # macOS system files
 .DS_Store
 
-# Analysis outputs
+# GDC / TCGAbiolinks downloads (local only)
+GDCdata/
+MANIFEST.txt
+*.tar.gz
+*.uuid/
 
 
 
