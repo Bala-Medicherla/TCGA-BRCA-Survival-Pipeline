@@ -57,14 +57,14 @@ Overall survival is defined using documented TCGA clinical fields. Survival time
 Below are example outputs you can surface directly in the README after running the pipeline.
 
 ### Kaplan–Meier curves by stage
-![Kaplan–Meier by stage](results/figures/km_by_stage.png)
+![Kaplan–Meier by stage](results/Figures/km_by_stage.png)
 
 **Interpretation**
 - Later-stage disease shows visibly worse overall survival than early-stage groups, consistent with clinical expectations.
 - The log-rank test output (see `results/tables/logrank_stage.txt`) provides a formal test of stage-stratified survival differences.
 
 ### Proportional hazards diagnostics
-![PH diagnostics](results/figures/ph_diagnostics.png)
+![PH diagnostics](results/Figures/ph_diagnostics.png)
 
 **Interpretation**
 - The diagnostics indicate whether the proportional hazards assumption holds for key covariates.
@@ -73,7 +73,7 @@ Below are example outputs you can surface directly in the README after running t
 ### Model performance (internal validation)
 **Interpretation**
 - The train/test C-index (see `results/tables/c_index.txt`) gives a baseline estimate of discrimination.
-- The bootstrap out-of-bag C-index (see `results/tables/bootstrap_c_index.txt`) provides a more robust internal validation estimate.
+- The bootstrap out-of-bag C-index (see `results/Tables/bootstrap_c_index.txt`) provides a more robust internal validation estimate.
 
 ## Optional Molecular Extension (Transcriptome-augmented model):
  To strengthen biological depth, an optional script integrates TCGA-BRCA gene expression data and builds a simple proliferation signature. The signature (average z-score of proliferation genes) is then evaluated alongside age and stage in a Cox model.
