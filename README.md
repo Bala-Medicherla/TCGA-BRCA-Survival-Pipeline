@@ -72,7 +72,7 @@ Below are example outputs you can surface directly in the README after running t
 
 ### Model performance (internal validation)
 **Interpretation**
-- The train/test C-index (see `results/tables/c_index.txt`) gives a baseline estimate of discrimination.
+- The train/test C-index (see `results/Tables/c_index.txt`) gives a baseline estimate of discrimination.
 - The bootstrap out-of-bag C-index (see `results/Tables/bootstrap_c_index.txt`) provides a more robust internal validation estimate.
 
 ## Optional Molecular Extension (Transcriptome-augmented model):
